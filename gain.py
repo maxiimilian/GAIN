@@ -29,9 +29,11 @@ tf.disable_v2_behavior()
 import numpy as np
 from tqdm import tqdm
 
-from utils import normalization, renormalization, rounding
-from utils import xavier_init
-from utils import binary_sampler, uniform_sampler, sample_batch_index
+from .utils import normalization, renormalization, rounding
+from .utils import xavier_init
+from .utils import binary_sampler, uniform_sampler, sample_batch_index
+
+import matplotlib.pyplot as plt
 
 
 def gain (data_x, gain_parameters):
@@ -151,6 +153,9 @@ def gain (data_x, gain_parameters):
   ## Iterations
   sess = tf.Session()
   sess.run(tf.global_variables_initializer())
+
+  G_loss_evo = []
+  D_loss_evo = []
    
   # Start Iterations
   for it in tqdm(range(iterations)):    
@@ -173,6 +178,15 @@ def gain (data_x, gain_parameters):
     _, G_loss_curr, MSE_loss_curr = \
     sess.run([G_solver, G_loss_temp, MSE_loss],
              feed_dict = {X: X_mb, M: M_mb, H: H_mb})
+
+    G_loss_evo.append(G_loss_curr)
+    D_loss_evo.append(D_loss_curr)
+
+  plt.plot(G_loss_evo, label="G")
+  plt.plot(D_loss_evo, label="D")
+  plt.yscale("log")
+  plt.legend()
+  plt.show()
             
   ## Return imputed data      
   Z_mb = uniform_sampler(0, 0.01, no, dim) 
